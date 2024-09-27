@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Clock</title>
+  <style>
+    body {
+  background-color: #282c34;
+  color: white;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background-color: rgba(255, 255, 255, 0.1);
+  height: 460px;
+  width: 220px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+}
+
+.upper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lower {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+#timerDisplay {
+  font-size: 3em;
+  margin: 0;
+}
+
+.time-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.time-control p {
+  margin: 0;
+}
+
+button {
+  background-color: #61dafb;
+  border: none;
+  color: #282c34;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+button:disabled {
+  background-color: #a8a8a8;
+}
+
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="upper">
+      <h1 id="timerDisplay">25:00</h1>
+    </div>
+    <div class="lower">
+      <div class="time-control">
+        <p>Session Time</p>
+        <button id="sessionDecrement">-</button>
+        <span id="sessionLength">25</span>
+        <button id="sessionIncrement">+</button>
+      </div>
+      <div class="time-control">
+        <p>Break Time</p>
+        <button id="breakDecrement">-</button>
+        <span id="breakLength">5</span>
+        <button id="breakIncrement">+</button>
+      </div>
+      <div class="buttons">
+        <button id="startStopBtn">Start</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let sessionTime = 25; // in minutes
+let breakTime = 5; // in minutes
+let isSession = true;
+let isRunning = false;
+let interval;
+let timeLeft = sessionTime * 60; // in seconds
+
+const timerDisplay = document.getElementById('timerDisplay');
+const sessionLength = document.getElementById('sessionLength');
+const breakLength = document.getElementById('breakLength');
+const startStopBtn = document.getElementById('startStopBtn');
+const resetBtn = document.getElementById('resetBtn');
+const sessionDecrement = document.getElementById('sessionDecrement');
+const sessionIncrement = document.getElementById('sessionIncrement');
+const breakDecrement = document.getElementById('breakDecrement');
+const breakIncrement = document.getElementById('breakIncrement');
+
+// Initialize display
+updateDisplay();
+
+// Event listeners for session and break time adjustments
+sessionIncrement.addEventListener('click', () => {
+  if (!isRunning) {
+    sessionTime++;
+    sessionLength.textContent = sessionTime;
+    if (isSession) {
+      timeLeft = sessionTime * 60;
+      updateDisplay();
+    }
+  }
+});
+
+sessionDecrement.addEventListener('click', () => {
+  if (!isRunning && sessionTime > 1) {
+    sessionTime--;
+    sessionLength.textContent = sessionTime;
+    if (isSession) {
+      timeLeft = sessionTime * 60;
+      updateDisplay();
+    }
+  }
+});
+
+breakIncrement.addEventListener('click', () => {
+  if (!isRunning) {
+    breakTime++;
+    breakLength.textContent = breakTime;
+  }
+});
+
+breakDecrement.addEventListener('click', () => {
+  if (!isRunning && breakTime > 1) {
+    breakTime--;
+    breakLength.textContent = breakTime;
+  }
+});
+
+// Start/Stop the timer
+startStopBtn.addEventListener('click', () => {
+  if (isRunning) {
+    clearInterval(interval);
+    startStopBtn.textContent = 'Start';
+  } else {
+    interval = setInterval(countdown, 1000);
+    startStopBtn.textContent = 'Stop';
+    disableButtons(true);
+  }
+  isRunning = !isRunning;
+});
+
+// Reset the timer
+resetBtn.addEventListener('click', () => {
+  clearInterval(interval);
+  isRunning = false;
+  isSession = true;
+  sessionTime = 25;
+  breakTime = 5;
+  timeLeft = sessionTime * 60;
+  updateDisplay();
+  sessionLength.textContent = sessionTime;
+  breakLength.textContent = breakTime;
+  startStopBtn.textContent = 'Start';
+  disableButtons(false);
+  resetLaps();
+});
+
+// Countdown function
+function countdown() {
+  if (timeLeft > 0) {
+    timeLeft--;
+    updateDisplay();
+  } else {
+    isSession = !isSession;
+    timeLeft = isSession ? sessionTime * 60 : breakTime * 60;
+  }
+}
+
+// Update the timer display
+function updateDisplay() {
+  const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+  const seconds = (timeLeft % 60).toString().padStart(2, '0');
+  timerDisplay.textContent = `${minutes}:${seconds}`;
+}
+
+// Disable or enable time adjustment buttons
+function disableButtons(disable) {
+  sessionIncrement.disabled = disable;
+  sessionDecrement.disabled = disable;
+  breakIncrement.disabled = disable;
+  breakDecrement.disabled = disable;
+}
+
+// Reset lap times
+function resetLaps() {
+  document.getElementById("lapsList").innerHTML = '';
+}
+
+  </script>
+</body>
+</html>
